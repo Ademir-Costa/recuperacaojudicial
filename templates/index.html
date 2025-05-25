@@ -72,7 +72,7 @@
                         <div class="col-md-6">
                             <label for="grupo_id" class="form-label">CPF/CNPJ do Grupo</label>
                             <input type="text" class="form-control" id="grupo_id" name="grupo_id" 
-                                   value="{{ submitted_grupo_id if submitted_grupo_id is not none else '' }}" required>
+                                   value="{{ submitted_grupo_id if submitted_grupo_id is not none else '' }}" >
                             <div class="invalid-feedback">
                                 Por favor, informe o CPF/CNPJ do grupo.
                             </div>
@@ -80,7 +80,7 @@
                         <div class="col-md-6">
                             <label for="grupo" class="form-label">Nome do Grupo</label>
                             <input type="text" class="form-control" id="grupo" name="grupo" 
-                                   value="{{ submitted_grupo_nome if submitted_grupo_nome is not none else '' }}" required>
+                                   value="{{ submitted_grupo_nome if submitted_grupo_nome is not none else '' }}" >
                             <div class="invalid-feedback">
                                 Por favor, informe o nome do grupo.
                             </div>
