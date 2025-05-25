@@ -1,0 +1,296 @@
+:root {
+    --primary: rgba(106, 90, 205, 0.8);
+    --primary-light: rgba(106, 90, 205, 0.6);
+    --primary-dark: rgba(106, 90, 205, 1);
+    --text: #ffffff;
+    --text-dark: #e0e0e0;
+    --bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --glass: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    --blur: 12px;
+    --transition: all 0.3s ease;
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+    line-height: 1.6;
+  }
+  
+  /* Container Principal */
+  .glass-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--glass);
+    backdrop-filter: blur(var(--blur));
+    -webkit-backdrop-filter: blur(var(--blur));
+    border-radius: 20px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    padding: 2.5rem;
+    overflow: hidden;
+  }
+  
+  /* Títulos */
+  h1, h2, h3, h4 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 1rem;
+  }
+  
+  h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(to right, transparent, var(--primary), transparent);
+    border-radius: 3px;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    margin-top: 2.5rem;
+    position: relative;
+    padding-left: 1rem;
+  }
+  
+  h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 4px;
+    background: var(--primary);
+    border-radius: 4px;
+  }
+  
+  /* Formulários */
+  .form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text) !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 12px !important;
+    transition: var(--transition);
+    backdrop-filter: blur(5px);
+  }
+  
+  .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  .form-control:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: var(--primary-light) !important;
+    box-shadow: 0 0 0 0.25rem rgba(106, 90, 205, 0.25) !important;
+    color: var(--text) !important;
+  }
+  
+  /* Botões */
+  .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    border: none;
+  }
+  
+  .btn-primary {
+    background: var(--primary);
+  }
+  
+  .btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(106, 90, 205, 0.4);
+  }
+  
+  .btn-outline-light {
+    border: 1px solid var(--glass-border);
+    color: var(--text);
+    background: transparent;
+  }
+  
+  .btn-outline-light:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary-light);
+  }
+  
+  .btn-danger {
+    background: rgba(255, 99, 71, 0.8);
+  }
+  
+  .btn-danger:hover {
+    background: rgba(255, 99, 71, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 99, 71, 0.4);
+  }
+  
+  /* Tabela */
+  .table {
+    --bs-table-bg: transparent;
+    --bs-table-color: var(--text);
+    --bs-table-border-color: var(--glass-border);
+    margin: 2rem 0;
+  }
+  
+  .table th {
+    background: rgba(106, 90, 205, 0.2);
+    backdrop-filter: blur(5px);
+    border-bottom: 2px solid var(--primary-light);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+  }
+  
+  .table td {
+    border-bottom: 1px solid var(--glass-border);
+    vertical-align: middle;
+    padding: 1.25rem 1rem;
+  }
+  
+  .table tr:hover td {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  /* Alertas */
+  .alert {
+    border: none;
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .alert-success {
+    background: rgba(40, 167, 69, 0.2);
+    color: #d1f7d8;
+  }
+  
+  .alert-danger {
+    background: rgba(220, 53, 69, 0.2);
+    color: #f8d7da;
+  }
+  
+  .alert-info {
+    background: rgba(23, 162, 184, 0.2);
+    color: #d1f2f7;
+  }
+  
+  /* Cards */
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    backdrop-filter: blur(5px);
+    box-shadow: var(--glass-shadow);
+    overflow: hidden;
+    transition: var(--transition);
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Mapa Mental */
+  #network {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(5px);
+    margin-top: 2rem;
+  }
+  
+  /* Efeitos de foco */
+  :focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.5);
+  }
+  
+  /* Responsividade */
+  @media (max-width: 768px) {
+    body {
+      padding: 1rem;
+    }
+    
+    .glass-container {
+      padding: 1.5rem;
+      border-radius: 16px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+    }
+    
+    h2 {
+      font-size: 1.5rem;
+    }
+    
+    .table-responsive {
+      border: none;
+    }
+  }
+  
+  /* Animação de entrada */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .glass-container {
+    animation: fadeIn 0.6s ease-out;
+  }
+  
+  /* Efeito de vidro para inputs */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 1rem;
+    color: white;
+    transition: var(--transition);
+    backdrop-filter: blur(5px);
+  }
+  
+  .glass-input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(106, 90, 205, 0.3);
+  }
+  
+  /* Efeito de vidro para botões secundários */
+  .btn-glass {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+  
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+  }

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Recuperação Judicial</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .glass-container {
+            background: rgba(255, 255, 255, 0.1); 
+            backdrop-filter: blur(10px); 
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        body {
+            background: linear-gradient(to right, #6a11cb, #2575fc); 
+            color: #333; 
+            min-height: 100vh;
+        }
+        .form-label, h1, h2, h4 {
+            color: #fff; 
+        }
+        .table {
+            background-color: rgba(255, 255, 255, 0.9); 
+        }
+        .btn-outline-light { 
+            color: #fff;
+            border-color: #fff;
+        }
+        .btn-outline-light:hover {
+            color: #2575fc;
+            background-color: #fff;
+        }
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+         #network { 
+            background-color: rgba(248, 249, 250, 0.95); 
+            border-radius: 8px;
+        }
+        .alert {
+            z-index: 1050; 
+        }
+        .socio-row .form-label { 
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="glass-container">
+            <h1 class="text-center mb-4">Sistema de Recuperação Judicial</h1>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="mb-5">
+                <h2 class="mb-3">Cadastrar/Atualizar Grupo e Adicionar Sócios</h2>
+                <form method="POST" action="{{ url_for('index') }}" class="needs-validation" novalidate>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="grupo_id" class="form-label">CPF/CNPJ do Grupo</label>
+                            <input type="text" class="form-control" id="grupo_id" name="grupo_id" 
+                                   value="{{ submitted_grupo_id if submitted_grupo_id is not none else '' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, informe o CPF/CNPJ do grupo.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="grupo" class="form-label">Nome do Grupo</label>
+                            <input type="text" class="form-control" id="grupo" name="grupo" 
+                                   value="{{ submitted_grupo_nome if submitted_grupo_nome is not none else '' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, informe o nome do grupo.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h4 class="mb-2 mt-4">Sócios (Listar para adicionar/manter no grupo)</h4>
+                    <div id="socios-container">
+                        {% set socios_list_to_render = submitted_socios if (submitted_socios and submitted_socios|length > 0 and (submitted_socios[0].nome or submitted_socios[0].cpf_socio)) else [{'nome': '', 'cpf_socio': ''}] %}
+                        {% for socio_item in socios_list_to_render %}
+                            <div class="row mb-3 socio-row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nome do Sócio</label>
+                                    <input type="text" class="form-control" name="socio_nome" value="{{ socio_item.nome if socio_item else '' }}" {% if loop.first and socios_list_to_render|length == 1 %}required{% endif %}>
+                                    <div class="invalid-feedback">
+                                        Por favor, informe o nome do sócio (pelo menos o primeiro, se houver sócios).
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">CPF do Sócio (Opcional)</label>
+                                    <input type="text" class="form-control" name="socio_cpf" value="{{ socio_item.cpf_socio if socio_item and socio_item.cpf_socio is not none else '' }}">
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-danger btn-remove-socio" 
+                                            style="display: {{ 'block' if socios_list_to_render|length > 1 else 'none' }};">
+                                        Remover
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-3">
+                        <button type="button" id="add-socio" class="btn btn-info text-white">
+                            Adicionar Linha de Sócio
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="mb-5">
+                <h2 class="mb-3">Pesquisar</h2>
+                <form method="GET" action="{{ url_for('index') }}" class="d-flex">
+                    <input type="text" name="termo" class="form-control me-2" placeholder="Nome, Grupo, CPF/CNPJ Sócio ou Grupo" value="{{ termo }}">
+                    <button type="submit" class="btn btn-outline-light">Pesquisar</button>
+                </form>
+            </div>
+            
+            <div>
+                <h2 class="mb-3">Resultados</h2>
+                {% if dados %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome Sócio</th>
+                                    <th>CPF Sócio</th>
+                                    <th>Grupo</th>
+                                    <th>CPF/CNPJ Grupo</th>
+                                    <th>Link (MidiaJur)</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in dados %}
+                                    <tr>
+                                        <td>
+                                            {% if item.cpf_socio and item.cpf_socio|trim != "" %}
+                                                <a href="{{ url_for('index', termo=item.cpf_socio) }}">{{ item.nome }}</a>
+                                            {% else %}
+                                                {{ item.nome }}
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ item.cpf_socio if item.cpf_socio and item.cpf_socio|trim != "" else '-' }}</td>
+                                        <td>{{ item.grupo_nome }}</td>
+                                        <td>{{ item.grupo_id }}</td>
+                                        <td>
+                                            {% if item.link and item.link not in ['Link não encontrado', 'Erro na busca'] %}
+                                                <a href="{{ item.link }}" target="_blank" class="btn btn-sm btn-outline-primary">Ver Link</a>
+                                            {% else %}
+                                                <span class="text-muted fst-italic">{{ item.link }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <form method="POST" action="{{ url_for('excluir_socio', id=item.id) }}" 
+                                                  onsubmit="return confirm('Tem certeza que deseja excluir este sócio?')">
+                                                  <input type="hidden" name="termo_pesquisa_hidden_on_delete" value="{{ termo }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                     <div class="alert alert-info">
+                        Nenhum resultado encontrado{% if termo %} para "{{ termo }}"{% endif %}. Cadastre novos dados ou refine sua busca.
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if dados and dados|length > 0 %}
+                <div class="mt-5">
+                    <h2 class="mb-3">Relação Grupo-Sócios (Mapa Mental)</h2>
+                    <div id="network" style="height: 600px; border: 1px solid #dee2e6;"></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script>
+        // Validação Bootstrap
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })();
+
+        function updateRemoveButtonsVisibility() {
+            const container = document.getElementById('socios-container');
+            if (!container) return;
+            const socioRows = container.querySelectorAll('.socio-row');
+            socioRows.forEach((row) => {
+                const removeButton = row.querySelector('.btn-remove-socio');
+                if (removeButton) {
+                    removeButton.style.display = (socioRows.length > 1) ? 'block' : 'none';
+                }
+            });
+            if (socioRows.length === 1) {
+                const firstSocioNameInput = socioRows[0].querySelector('input[name="socio_nome"]');
+                if (firstSocioNameInput) firstSocioNameInput.required = true; // O primeiro nome é sempre obrigatório se for a única linha.
+            } else {
+                 socioRows.forEach((row, index) => { // Se houver múltiplas linhas, nenhuma é estritamente obrigatória pelo JS, o backend valida
+                     const socioNameInput = row.querySelector('input[name="socio_nome"]');
+                     if(socioNameInput) socioNameInput.required = false;
+                 });
+            }
+        }
+
+        function addSocioRowEventListeners(row) {
+            const removeButton = row.querySelector('.btn-remove-socio');
+            if (removeButton) {
+                removeButton.addEventListener('click', function() {
+                    this.closest('.socio-row').remove();
+                    updateRemoveButtonsVisibility();
+                });
+            }
+        }
+        
+        const addSocioButton = document.getElementById('add-socio');
+        if (addSocioButton) {
+            addSocioButton.addEventListener('click', function() {
+                const container = document.getElementById('socios-container');
+                if (!container) return;
+                
+                const templateRow = container.querySelector('.socio-row');
+                let newRowElement;
+
+                if (templateRow) { 
+                    newRowElement = templateRow.cloneNode(true);
+                    const inputNome = newRowElement.querySelector('input[name="socio_nome"]');
+                    if (inputNome) {
+                        inputNome.value = '';
+                        inputNome.classList.remove('is-invalid', 'is-valid');
+                        inputNome.required = false; 
+                    }
+                    const inputCpf = newRowElement.querySelector('input[name="socio_cpf"]');
+                    if (inputCpf) {
+                        inputCpf.value = '';
+                        inputCpf.classList.remove('is-invalid', 'is-valid');
+                    }
+                    newRowElement.classList.remove('was-validated');
+                    container.appendChild(newRowElement);
+                } else { 
+                    const newRowHTML = `
+                        <div class="row mb-3 socio-row">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome do Sócio</label>
+                                <input type="text" class="form-control" name="socio_nome" value="">
+                                <div class="invalid-feedback">Por favor, informe o nome do sócio.</div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">CPF do Sócio (Opcional)</label>
+                                <input type="text" class="form-control" name="socio_cpf" value="">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-danger btn-remove-socio" style="display: block;">Remover</button>
+                            </div>
+                        </div>`;
+                    container.insertAdjacentHTML('beforeend', newRowHTML);
+                    newRowElement = container.lastElementChild; 
+                }
+                
+                if (newRowElement) { 
+                    addSocioRowEventListeners(newRowElement);
+                }
+                updateRemoveButtonsVisibility();
+            });
+        }
+
+        document.querySelectorAll('#socios-container .socio-row').forEach(row => {
+            addSocioRowEventListeners(row);
+        });
+        updateRemoveButtonsVisibility(); 
+
+
+        // Mapa mental / Vis Network
+        {% if dados and dados|length > 0 %}
+            try {
+                const dadosJS = {{ dados | tojson | safe }}; 
+
+                if (!dadosJS || dadosJS.length === 0) {
+                    console.warn("Dados para o mapa mental estão vazios.");
+                } else {
+                    const nodesData = [];
+                    const edgesData = [];
+                    const groupNodeIds = new Set(); 
+                    const uniquePartnerNodeIds = new Set(); 
+
+                    dadosJS.forEach(item => {
+                        const groupIdNode = 'group-' + item.grupo_id;
+                        
+                        if (!groupNodeIds.has(groupIdNode)) {
+                            nodesData.push({
+                                id: groupIdNode,
+                                label: 'Grupo:\n' + item.grupo_nome,
+                                color: { background: '#6A5ACD', border: '#483D8B', highlight: { background: '#7B68EE', border: '#6A5ACD' } },
+                                font: { size: 17, color: 'white', face: 'Arial', strokeWidth: 1, strokeColor: '#483D8B'},
+                                shape: 'box', value: 15, margin:10
+                            });
+                            groupNodeIds.add(groupIdNode);
+                        }
+
+                        let partnerNodeId;
+                        let partnerIdentifierExists = false;
+                        if (item.cpf_socio && item.cpf_socio.trim() !== "") {
+                            partnerNodeId = 'partner-cpf-' + item.cpf_socio.trim();
+                            partnerIdentifierExists = true;
+                        } else if (item.nome && item.nome.trim() !== "") {
+                            partnerNodeId = 'partner-name-' + encodeURIComponent(item.nome.trim().toUpperCase());
+                            partnerIdentifierExists = true;
+                        } else {
+                            partnerNodeId = 'partner-linkid-' + item.id; 
+                        }
+                        
+                        if (partnerIdentifierExists && !uniquePartnerNodeIds.has(partnerNodeId)) {
+                            nodesData.push({
+                                id: partnerNodeId,
+                                label: item.nome,
+                                cpf_socio: item.cpf_socio, 
+                                color: { background: '#ADD8E6', border: '#87CEEB', highlight: { background: '#B0E0E6', border: '#ADD8E6' } },
+                                font: { size: 14, color: '#333', face: 'Arial' },
+                                shape: 'ellipse', value: 8
+                            });
+                            uniquePartnerNodeIds.add(partnerNodeId);
+                        } else if (!partnerIdentifierExists && !uniquePartnerNodeIds.has(partnerNodeId)){ 
+                             nodesData.push({
+                                id: partnerNodeId,
+                                label: item.nome || "Sócio Desconhecido",
+                                cpf_socio: item.cpf_socio, 
+                                color: { background: '#D3D3D3', border: '#A9A9A9'}, // Cor diferente para fallback
+                                font: { size: 14, color: '#333'}, shape: 'ellipse', value: 8
+                            });
+                            uniquePartnerNodeIds.add(partnerNodeId);
+                        }
+
+                        edgesData.push({
+                            from: groupIdNode,
+                            to: partnerNodeId,
+                            arrows: { to: { enabled: true, scaleFactor: 0.7, type: 'arrow' } },
+                            color: { color: '#A9A9A9', highlight: '#808080', hover: '#808080' },
+                            length: 180
+                        });
+                    });
+                    
+                    const nodes = new vis.DataSet(nodesData);
+                    const edges = new vis.DataSet(edgesData);
+                    
+                    const container = document.getElementById('network');
+                    const dataVis = { nodes: nodes, edges: edges };
+                    const options = {
+                        physics: { enabled: false }, 
+                        interaction: { hover: true, dragNodes: true, dragView: true, zoomView: true, tooltipDelay: 300 },
+                        nodes: { borderWidth: 2, shadow: { enabled: true, size: 7, x: 3, y: 3, color: 'rgba(0,0,0,0.2)'}},
+                        edges: { width: 2, smooth: { type: 'continuous' }}, // 'dynamic' pode ser melhor se houver sobreposições
+                        layout: { randomSeed: 2 } // Ajuda a ter um layout consistente com física desabilitada
+                    };
+                    
+                    if (container) {
+                        const network = new vis.Network(container, dataVis, options);
+                        network.on("selectNode", function(params) {
+                            if (params.nodes.length === 1) {
+                                const nodeId = params.nodes[0];
+                                const nodeData = nodes.get(nodeId); 
+                                if (nodeData && nodeData.id.startsWith('partner-') && nodeData.cpf_socio && nodeData.cpf_socio.trim() !== '') {
+                                    const baseUrl = "{{ url_for('index') }}"; 
+                                    // Corrige a URL para não ter // se baseUrl já terminar com /
+                                    let searchUrl = baseUrl.endsWith('/') ? baseUrl.slice(0,-1) : baseUrl;
+                                    searchUrl += "?termo=" + encodeURIComponent(nodeData.cpf_socio);
+                                    window.location.href = searchUrl;
+                                }
+                            }
+                        });
+                    } else {
+                        console.error("Elemento com ID 'network' não encontrado para o mapa mental.");
+                    }
+                }
+            } catch (e) {
+                console.error("Erro ao inicializar o mapa mental (Vis Network):", e);
+                const networkContainer = document.getElementById('network');
+                if (networkContainer) {
+                    networkContainer.innerHTML = "<p class='text-danger text-center'>Ocorreu um erro ao carregar o mapa mental.</p>";
+                }
+            }
+        {% endif %}
+    </script>
+</body>
+</html>
